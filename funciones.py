@@ -1,4 +1,5 @@
 import re
+import reduce
 
 def es_patente_valida(patente):
     if re.match(r"[A-Z]{2}+\d{3}+[A-Z]{2}", patente):
@@ -54,3 +55,21 @@ def guardarpatentes(matriz):
             print("No hay lugares disponibles")
         patente = input("Ingrese la patente o 'listo' para terminar: ")
     return matriz
+
+def reporte_recaudacion_total(historial):
+    if len(historial) == 0:
+        return 0
+    total = reduce(lambda acumulador, ticket: acumulador + ticket["importe"], historial, 0.0)
+    return total
+
+def cantidad_vehiculos_atendidos(historial):
+    if len(historial) == 0:
+        return 0
+    lista_patentes = list(map(lambda ticket: ticket["patente"], historial))
+    return len(lista_patentes)
+
+def filtrar_por_tipo(registros, tipo):
+    tipo_buscado = tipo
+    resultado = list(filter(lambda item: item[1]["tipo"]== tipo_buscado, registros.items()))
+
+    return resultado
