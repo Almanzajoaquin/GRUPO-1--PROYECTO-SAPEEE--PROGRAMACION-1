@@ -1,0 +1,89 @@
+import funciones
+from datetime import datetime
+
+def mostrar_menu():
+    print("\n--- SISTEMA DE GESTIÓN DE ESTACIONAMIENTO ---")
+    print("1. Ingreso de vehículo")
+    print("2. Egreso de vehículo")
+    print("3. Ver mapa del estacionamiento (Disponibilidad)")
+    print("4. Buscar vehículo por patente")
+    print("5. Reporte de recaudación")
+    print("6. Salir")
+    return input("Seleccione una opción: ")
+
+def main():
+    # Inicialización del sistema
+    n, m = funciones.ingresotamañomatriz()
+    matriz = funciones.matrizestacionamiento(n, m)
+    
+    vehiculos_activos = {} 
+    historial_tickets = [] 
+
+    while True:
+        opcion = mostrar_menu()
+
+        if opcion == '1':
+            if funciones.lugareslibres(matriz):
+                patente = input("Ingrese la patente: ").upper()
+                if funciones.es_patente_valida(patente):
+                    if patente not in vehiculos_activos:
+                        tipo = int(input("Tipo de vehículo (1, 2 o 3): "))
+                        x, y = funciones.buscarespaciodisponible(matriz)
+                        matriz[x][y] = patente 
+                        
+                        vehiculos_activos[patente] = {
+                            "tipo": tipo,
+                            "hora_ingreso": datetime.now(),
+                            "posicion": (x, y)
+                        }
+                        print(f"Vehículo ingresado en posición [{x}][{y}]")
+                    else:
+                        print("El vehículo ya se encuentra adentro.")
+                else:
+                    print("Patente inválida.")
+            else:
+                print("No hay lugares disponibles.")
+
+        elif opcion == '2':
+            patente = input("Ingrese la patente a retirar: ").upper()
+            if patente in vehiculos_activos:
+                datos = vehiculos_activos[patente]
+                hora_egreso = datetime.now()
+                
+                horas, total = funciones.calcular_importe(datos["tipo"], datos["hora_ingreso"], hora_egreso)
+                
+                x, y = datos["posicion"]
+                matriz[x][y] = 'libre'
+                historial_tickets.append({"patente": patente, "importe": total, "tipo": datos["tipo"]})
+                del vehiculos_activos[patente]
+                
+                print(f"Vehículo retirado. Horas: {horas}. Total a pagar: ${total}")
+            else:
+                print("Vehículo no encontrado.")
+
+        elif opcion == '3':
+            for fila in matriz:
+                print(fila)
+
+        elif opcion == '4':
+            patente_buscar = input("Ingrese la patente a buscar: ").upper()
+            if patente_buscar in vehiculos_activos:
+                pos = vehiculos_activos[patente_buscar]["posicion"]
+                print(f"El vehículo está en la fila {pos[0]}, columna {pos[1]}")
+            else:
+                print("Vehículo no encontrado.")
+
+        elif opcion == '5':
+            total = funciones.reporte_recaudacion_total(historial_tickets)
+            cantidad = funciones.cantidad_vehiculos_atendidos(historial_tickets)
+            print(f"Total recaudado: ${total}")
+            print(f"Vehículos atendidos: {cantidad}")
+
+        elif opcion == '6':
+            print("Saliendo...")
+            break
+        else:
+            print("Opción inválida.")
+
+if __name__ == "__main__":
+    main()
