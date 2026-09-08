@@ -1,3 +1,8 @@
+<<<<<<< HEAD
+=======
+<<<<<<< Updated upstream
+=======
+>>>>>>> Ajoaquin
 import re
 import reduce
 
@@ -72,4 +77,11 @@ def filtrar_por_tipo(registros, tipo):
     tipo_buscado = tipo
     resultado = list(filter(lambda item: item[1]["tipo"]== tipo_buscado, registros.items()))
 
+<<<<<<< HEAD
     return resultado
+=======
+    return resultado
+
+
+>>>>>>> Stashed changes
+>>>>>>> Ajoaquin
