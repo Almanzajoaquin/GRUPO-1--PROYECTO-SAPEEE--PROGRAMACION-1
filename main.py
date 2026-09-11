@@ -12,32 +12,25 @@ def mostrar_menu():
     return input("Seleccione una opción: ")
 
 def main():
-    # Inicialización del sistema
     n, m = funciones.ingresotamañomatriz()
     matriz = funciones.matrizestacionamiento(n, m)
     
-    # Diccionario para controlar los autos que están actualmente adentro
-    # Formato: {"PATENTE": {"tipo": 1, "hora_ingreso": datetime.now(), "posicion": (x, y)}}
     vehiculos_activos = {} 
     
-    # Lista de tickets históricos para usar reduce() y filter() en los reportes
     historial_tickets = [] 
 
     while True:
         opcion = mostrar_menu()
 
         if opcion == '1':
-            # INGRESO DE VEHÍCULO
             if funciones.lugareslibres(matriz):
                 patente = input("Ingrese la patente: ").upper()
                 if funciones.es_patente_valida(patente):
                     if patente not in vehiculos_activos:
                         tipo = int(input("Tipo de vehículo (1, 2 o 3): "))
                         x, y = funciones.buscarespaciodisponible(matriz)
-                        # Asignamos la patente (o un '1') a la matriz
                         matriz[x][y] = patente 
                         
-                        # Guardamos el registro
                         vehiculos_activos[patente] = {
                             "tipo": tipo,
                             "hora_ingreso": datetime.now(),
@@ -52,23 +45,18 @@ def main():
                 print("No hay lugares disponibles.")
 
         elif opcion == '2':
-            # EGRESO DE VEHÍCULO
             patente = input("Ingrese la patente a retirar: ").upper()
             if patente in vehiculos_activos:
                 datos_vehiculo = vehiculos_activos[patente]
                 hora_egreso = datetime.now()
                 
-                # Calcular importe
                 horas, total = funciones.calcular_importe(datos_vehiculo["tipo"], datos_vehiculo["hora_ingreso"], hora_egreso)
                 
-                # Liberar lugar en la matriz ('0' o 'libre')
                 x, y = datos_vehiculo["posicion"]
                 matriz[x][y] = 'libre'
                 
-                # Guardar en el historial para los reportes
                 historial_tickets.append({"patente": patente, "importe": total, "tipo": datos_vehiculo["tipo"]})
                 
-                # Eliminar de activos
                 del vehiculos_activos[patente]
                 
                 print(f"Vehículo retirado. Horas: {horas}. Total a pagar: ${total}")
@@ -76,13 +64,11 @@ def main():
                 print("El vehículo no se encuentra registrado.")
 
         elif opcion == '3':
-            # MAPA DEL ESTACIONAMIENTO
             print("\nMapa actual:")
             for fila in matriz:
                 print(fila)
 
         elif opcion == '4':
-            # BUSCAR POR PATENTE
             patente_buscar = input("Ingrese la patente a buscar: ").upper()
             if patente_buscar in vehiculos_activos:
                 pos = vehiculos_activos[patente_buscar]["posicion"]
@@ -91,7 +77,6 @@ def main():
                 print("Vehículo no encontrado.")
 
         elif opcion == '5':
-            # REPORTE DE RECAUDACIÓN (Uso de filter y reduce)
             total = funciones.reporte_recaudacion_total(historial_tickets)
             cantidad = funciones.cantidad_vehiculos_atendidos(historial_tickets)
             print(f"Total recaudado históricamente: ${total}")

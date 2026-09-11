@@ -1,14 +1,13 @@
-
 import re
-import reduce
+from functools import reduce
 
 def es_patente_valida(patente):
     '''Se confirma si lo ingresado coincide con el patron de patente
     nueva (AB123CD) o patente antigua (ABC123) y devuelve True si coincide
     o False si no coincide.'''
-    if re.match(r"[A-Z]{2}+\d{3}+[A-Z]{2}", patente):
+    if re.match(r"[A-Z]{2}\d{3}[A-Z]{2}", patente):
         return True
-    elif re.match(r"[A-Z]{3}+\d{3}", patente):
+    elif re.match(r"[A-Z]{3}\d{3}", patente):
         return True
     else:
         return False
@@ -98,9 +97,6 @@ def filtrar_por_tipo(registros, tipo):
     indicado.'''
     tipo_buscado = tipo
     resultado = list(filter(lambda item: item[1]["tipo"]== tipo_buscado, registros.items()))
-
-    return resultado
-
     return resultado
 
 def tipovehiculo(tipo):
