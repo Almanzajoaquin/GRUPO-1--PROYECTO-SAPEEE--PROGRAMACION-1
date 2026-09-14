@@ -138,20 +138,14 @@ def convertirhoras(minutostotales):
     else:
         return horasenteras
 
-def calcular_importe(tipo, hora_ingreso, hora_egreso):
-    '''La funcion recibe el tipo de vehiculo y los objetos de hora de ingreso
-    y egreso. Calcula el tiempo de estadia y devuelve las horas cobradas y el
-    total a pagar. Si la estadia es de una hora o menos no se cobra. En caso
-    de recibir un tipo invalido devuelve un mensaje de error.'''
+def calcular_importe(tipo, horaentrada, minutosentrada, horasalida, minutossalida):
+    '''La funcion recibe el tipo de vehiculo y los tiempos exactos en numeros enteros.
+    Calcula el tiempo de estadia y devuelve las horas cobradas y el total a pagar.
+    Si la estadia es de una hora o menos no se cobra.'''
     preciohora = tipovehiculo(tipo)
     
     if preciohora == 0:
         return "tipo de vehiculo invalido"
-
-    horaentrada = hora_ingreso.hour
-    minutosentrada = hora_ingreso.minute
-    horasalida = hora_egreso.hour
-    minutossalida = hora_egreso.minute
 
     minutos = calculartiempo(horaentrada, minutosentrada, horasalida, minutossalida)
     
