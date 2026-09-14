@@ -23,10 +23,10 @@ def main():
 
         if opcion == '1':
             if funciones.lugareslibres(matriz):
-                patente = input("Ingrese la patente: ").upper()
+                patente = input("Ingrese la patente en mayusculas: ")
                 if funciones.es_patente_valida(patente):
                     if patente not in vehiculos_activos:
-                        tipo = int(input("Tipo de vehículo (1, 2 o 3): "))
+                        tipo = int(input("Tipo de vehículo Auto(1), Camioneta(2) o Moto(3)): "))
                         
                         h_in = int(input("Ingrese la hora de entrada (0-23): "))
                         m_in = int(input("Ingrese los minutos de entrada (0-59): "))
