@@ -27,9 +27,18 @@ def main():
                 if funciones.es_patente_valida(patente):
                     if patente not in vehiculos_activos:
                         tipo = int(input("Tipo de vehículo Auto(1), Camioneta(2) o Moto(3)): "))
+                        while tipo not in (1, 2, 3):
+                            print("Tipo inválido. Debe ser 1, 2 o 3.")
+                            tipo = int(input("Tipo de vehículo Auto(1), Camioneta(2) o Moto(3)): "))
                         
                         h_in = int(input("Ingrese la hora de entrada (0-23): "))
+                        while h_in > 23 or h_in < 0:
+                            print("Horario incorrecto. Ingrese un horario valido (0-23hs)")
+                            h_in = int(input("Ingrese la hora de entrada (0-23): "))
                         m_in = int(input("Ingrese los minutos de entrada (0-59): "))
+                        while m_in > 59 or m_in < 0:
+                            print("Minutos incorrecto. Ingrese un minuto valido (0-59)")
+                            m_in = int(input("Ingrese los minutos de entrada (0-59): "))
                         
                         x, y = funciones.buscarespaciodisponible(matriz)
                         matriz[x][y] = patente 
@@ -55,7 +64,13 @@ def main():
                 datos_vehiculo = vehiculos_activos[patente]
                 
                 h_out = int(input("Ingrese la hora de salida (0-23): "))
+                while h_out > 23 or h_out < 0:
+                    print("Horario incorrecto. Ingrese un horario valido (0-23hs)")
+                    h_out = int(input("Ingrese la hora de salida (0-23): "))
                 m_out = int(input("Ingrese los minutos de salida (0-59): "))
+                while m_out > 23 or m_out < 0:
+                    print("Horario incorrecto. Ingrese un horario valido (0-59)")
+                    m_out = int(input("Ingrese los minutos de salida (0-59): "))
                 
                 horas, total = funciones.calcular_importe(
                     datos_vehiculo["tipo"], 
