@@ -1,5 +1,4 @@
 import funciones
-from datetime import datetime
 
 def mostrar_menu():
     print("\n--- SISTEMA DE GESTIÓN DE ESTACIONAMIENTO ---")
@@ -12,37 +11,39 @@ def mostrar_menu():
     return input("Seleccione una opción: ")
 
 def main():
-    # Inicialización del sistema
     n, m = funciones.ingresotamañomatriz()
     matriz = funciones.matrizestacionamiento(n, m)
     
-    # Diccionario para controlar los autos que están actualmente adentro
-    # Formato: {"PATENTE": {"tipo": 1, "hora_ingreso": datetime.now(), "posicion": (x, y)}}
-    vehiculos_activos = {} 
+    vehiculos_activos = []
     
-    # Lista de tickets históricos para usar reduce() y filter() en los reportes
     historial_tickets = [] 
 
     while True:
         opcion = mostrar_menu()
 
         if opcion == '1':
-            # INGRESO DE VEHÍCULO
             if funciones.lugareslibres(matriz):
-                patente = input("Ingrese la patente: ").upper()
+                patente = input("Ingrese la patente en mayusculas: ")
                 if funciones.es_patente_valida(patente):
-                    if patente not in vehiculos_activos:
-                        tipo = int(input("Tipo de vehículo (1, 2 o 3): "))
+                    if not funciones.patente_registrada(vehiculos_activos, patente):
+                        tipo = int(input("Tipo de vehículo Auto(1), Camioneta(2) o Moto(3)): "))
+                        while tipo not in (1, 2, 3):
+                            print("Tipo inválido. Debe ser 1, 2 o 3.")
+                            tipo = int(input("Tipo de vehículo Auto(1), Camioneta(2) o Moto(3)): "))
+                        
+                        h_in = int(input("Ingrese la hora de entrada (0-23): "))
+                        while h_in > 23 or h_in < 0:
+                            print("Horario incorrecto. Ingrese un horario valido (0-23hs)")
+                            h_in = int(input("Ingrese la hora de entrada (0-23): "))
+                        m_in = int(input("Ingrese los minutos de entrada (0-59): "))
+                        while m_in > 59 or m_in < 0:
+                            print("Minutos incorrecto. Ingrese un minuto valido (0-59)")
+                            m_in = int(input("Ingrese los minutos de entrada (0-59): "))
+                        
                         x, y = funciones.buscarespaciodisponible(matriz)
-                        # Asignamos la patente (o un '1') a la matriz
                         matriz[x][y] = patente 
                         
-                        # Guardamos el registro
-                        vehiculos_activos[patente] = {
-                            "tipo": tipo,
-                            "hora_ingreso": datetime.now(),
-                            "posicion": (x, y)
-                        }
+                        vehiculos_activos.append([patente, tipo, h_in, m_in, x, y])
                         print(f"Vehículo ingresado en posición [{x}][{y}]")
                     else:
                         print("El vehículo ya se encuentra en el estacionamiento.")
@@ -52,46 +53,55 @@ def main():
                 print("No hay lugares disponibles.")
 
         elif opcion == '2':
-            # EGRESO DE VEHÍCULO
             patente = input("Ingrese la patente a retirar: ").upper()
-            if patente in vehiculos_activos:
-                datos_vehiculo = vehiculos_activos[patente]
-                hora_egreso = datetime.now()
+            datos_vehiculo = funciones.buscar_vehiculo(vehiculos_activos, patente)
+            if datos_vehiculo is not None:
                 
-                # Calcular importe
-                horas, total = funciones.calcular_importe(datos_vehiculo["tipo"], datos_vehiculo["hora_ingreso"], hora_egreso)
+                h_out = int(input("Ingrese la hora de salida (0-23): "))
+                while h_out > 23 or h_out < 0:
+                    print("Horario incorrecto. Ingrese un horario valido (0-23hs)")
+                    h_out = int(input("Ingrese la hora de salida (0-23): "))
+                m_out = int(input("Ingrese los minutos de salida (0-59): "))
+                while m_out > 59 or m_out < 0:
+                    print("Horario incorrecto. Ingrese un horario valido (0-59)")
+                    m_out = int(input("Ingrese los minutos de salida (0-59): "))
                 
-                # Liberar lugar en la matriz ('0' o 'libre')
-                x, y = datos_vehiculo["posicion"]
+                horas, total = funciones.calcular_importe(
+                    datos_vehiculo[1],   # tipo
+                    datos_vehiculo[2],   # hora_ingreso
+                    datos_vehiculo[3],   # minuto_ingreso
+                    h_out,
+                    m_out
+                )
+                
+                x = datos_vehiculo[4]
+                y = datos_vehiculo[5]
                 matriz[x][y] = 'libre'
                 
-                # Guardar en el historial para los reportes
-                historial_tickets.append({"patente": patente, "importe": total, "tipo": datos_vehiculo["tipo"]})
+                historial_tickets.append([patente, total, datos_vehiculo[1]])
                 
-                # Eliminar de activos
-                del vehiculos_activos[patente]
+                funciones.eliminar_vehiculo(vehiculos_activos, patente)
                 
-                print(f"Vehículo retirado. Horas: {horas}. Total a pagar: ${total}")
+                print(f"Vehículo retirado. Horas cobradas: {horas}. Total a pagar: ${total}")
             else:
                 print("El vehículo no se encuentra registrado.")
 
         elif opcion == '3':
-            # MAPA DEL ESTACIONAMIENTO
             print("\nMapa actual:")
             for fila in matriz:
                 print(fila)
 
         elif opcion == '4':
-            # BUSCAR POR PATENTE
-            patente_buscar = input("Ingrese la patente a buscar: ").upper()
-            if patente_buscar in vehiculos_activos:
-                pos = vehiculos_activos[patente_buscar]["posicion"]
-                print(f"El vehículo está en la fila {pos[0]}, columna {pos[1]}")
+            patente_buscar = input("Ingrese la patente a buscar: ")
+            datos_vehiculo = funciones.buscar_vehiculo(vehiculos_activos, patente_buscar)
+            if datos_vehiculo is not None:
+                x = datos_vehiculo[4]
+                y = datos_vehiculo[5]
+                print(f"El vehículo está en la fila {x}, columna {y}")
             else:
                 print("Vehículo no encontrado.")
 
         elif opcion == '5':
-            # REPORTE DE RECAUDACIÓN (Uso de filter y reduce)
             total = funciones.reporte_recaudacion_total(historial_tickets)
             cantidad = funciones.cantidad_vehiculos_atendidos(historial_tickets)
             print(f"Total recaudado históricamente: ${total}")
@@ -104,6 +114,5 @@ def main():
         else:
             print("Opción inválida. Intente de nuevo.")
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     main()
-    
