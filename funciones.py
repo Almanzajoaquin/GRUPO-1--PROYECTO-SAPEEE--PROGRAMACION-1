@@ -56,7 +56,32 @@ def lugareslibres(matriz):
         for j in range(len(matriz[i])):
             if matriz[i][j] == 'libre':
                 return True
-    return False              
+    return False        
+def patente_registrada(vehiculos_activos, patente):
+    '''La funcion recibe la lista de vehiculos activos y una patente, y
+    devuelve True si la patente ya se encuentra registrada, o False en
+    caso contrario.'''
+    for vehiculo in vehiculos_activos:
+        if vehiculo[0] == patente:
+            return True
+    return False
+
+def buscar_vehiculo(vehiculos_activos, patente):
+    '''La funcion recibe la lista de vehiculos activos y una patente, y
+    devuelve la lista de datos del vehiculo si lo encuentra, o None si
+    no esta registrado.'''
+    for vehiculo in vehiculos_activos:
+        if vehiculo[0] == patente:
+            return vehiculo
+    return None
+
+def eliminar_vehiculo(vehiculos_activos, patente):
+    '''La funcion recibe la lista de vehiculos activos y una patente, y
+    elimina de la lista el vehiculo que coincida con esa patente.'''
+    for i in range(len(vehiculos_activos)):
+        if vehiculos_activos[i][0] == patente:
+            del vehiculos_activos[i]
+            return      
 
 def guardarpatentes(matriz):
     '''La funcion recibe patentes hasta que el usuario ingrese "listo".
@@ -79,7 +104,7 @@ def reporte_recaudacion_total(historial):
     vacio devuelve 0.'''
     if len(historial) == 0:
         return 0
-    total = reduce(lambda acumulador, ticket: acumulador + ticket["importe"], historial, 0.0)
+    total = reduce(lambda acumulador, ticket: acumulador + ticket[1], historial, 0.0)
     return total
 
 def cantidad_vehiculos_atendidos(historial):
@@ -88,15 +113,14 @@ def cantidad_vehiculos_atendidos(historial):
     En caso de que el historial este vacio devuelve 0.'''
     if len(historial) == 0:
         return 0
-    lista_patentes = list(map(lambda ticket: ticket["patente"], historial))
+    lista_patentes = list(map(lambda ticket: ticket[0], historial))
     return len(lista_patentes)
 
 def filtrar_por_tipo(registros, tipo):
     '''La funcion recibe el diccionario de registros y un tipo de vehiculo
     y devuelve una lista con todos los registros que coincidan con el tipo
     indicado.'''
-    tipo_buscado = tipo
-    resultado = list(filter(lambda item: item[1]["tipo"]== tipo_buscado, registros.items()))
+    resultado = list(filter(lambda vehiculo: vehiculo[1] == tipo, registros))
     return resultado
 
 def tipovehiculo(tipo):

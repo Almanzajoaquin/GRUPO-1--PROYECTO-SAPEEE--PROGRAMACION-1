@@ -68,7 +68,7 @@ def main():
                     print("Horario incorrecto. Ingrese un horario valido (0-23hs)")
                     h_out = int(input("Ingrese la hora de salida (0-23): "))
                 m_out = int(input("Ingrese los minutos de salida (0-59): "))
-                while m_out > 23 or m_out < 0:
+                while m_out > 59 or m_out < 0:
                     print("Horario incorrecto. Ingrese un horario valido (0-59)")
                     m_out = int(input("Ingrese los minutos de salida (0-59): "))
                 
