@@ -1,6 +1,6 @@
 
 import re
-import reduce
+from functools import reduce
 
 def es_patente_valida(patente): 
     if re.fullmatch(r"[A-Z]{2}+\d{3}+[A-Z]{2}", patente):
@@ -121,16 +121,10 @@ def cantidad_vehiculos_atendidos(historial):
     return len(lista_patentes)
 
 def filtrar_por_tipo(registros, tipo):
-<<<<<<< HEAD
     '''La funcion recibe el diccionario de registros y un tipo de vehiculo
     y devuelve una lista con todos los registros que coincidan con el tipo
     indicado.'''
     resultado = list(filter(lambda vehiculo: vehiculo[1] == tipo, registros))
-=======
-    tipo_buscado = tipo
-    resultado = list(filter(lambda item: item[1]["tipo"]== tipo_buscado, registros.items()))
-
->>>>>>> 2d20ce1c209dc6c3f1e57d8dd0a24c93a11de1f0
     return resultado
 
     return resultado
