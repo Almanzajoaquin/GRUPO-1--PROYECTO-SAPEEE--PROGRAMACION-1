@@ -78,7 +78,7 @@ def main():
                 y = datos_vehiculo[5]
                 matriz[x][y] = 'libre'
                 
-                historial_tickets.append({"patente": patente, "importe": total, "tipo": datos_vehiculo[1]})
+                historial_tickets.append([patente, total, datos_vehiculo[1]])
                 
                 funciones.eliminar_vehiculo(vehiculos_activos, patente)
                 
@@ -92,6 +92,7 @@ def main():
                 print(fila)
 
         elif opcion == '4':
+            patente_buscar = input("Ingrese la patente a buscar: ")
             datos_vehiculo = funciones.buscar_vehiculo(vehiculos_activos, patente_buscar)
             if datos_vehiculo is not None:
                 x = datos_vehiculo[4]
