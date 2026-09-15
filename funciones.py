@@ -3,9 +3,9 @@ import re
 from functools import reduce
 
 def es_patente_valida(patente): 
-    if re.fullmatch(r"[A-Z]{2}+\d{3}+[A-Z]{2}", patente):
+    if re.fullmatch(r"[A-Z]{2}\d{3}[A-Z]{2}", patente):
         return True
-    elif re.fullmatch(r"[A-Z]{3}+\d{3}", patente):
+    elif re.fullmatch(r"[A-Z]{3}\d{3}", patente):
         return True
     else:
         return False
@@ -45,31 +45,6 @@ def lugareslibres(matriz):
             if matriz[i][j] == 'libre':
                 return True
     return False        
-def patente_registrada(vehiculos_activos, patente):
-    '''La funcion recibe la lista de vehiculos activos y una patente, y
-    devuelve True si la patente ya se encuentra registrada, o False en
-    caso contrario.'''
-    for vehiculo in vehiculos_activos:
-        if vehiculo[0] == patente:
-            return True
-    return False
-
-def buscar_vehiculo(vehiculos_activos, patente):
-    '''La funcion recibe la lista de vehiculos activos y una patente, y
-    devuelve la lista de datos del vehiculo si lo encuentra, o None si
-    no esta registrado.'''
-    for vehiculo in vehiculos_activos:
-        if vehiculo[0] == patente:
-            return vehiculo
-    return None
-
-def eliminar_vehiculo(vehiculos_activos, patente):
-    '''La funcion recibe la lista de vehiculos activos y una patente, y
-    elimina de la lista el vehiculo que coincida con esa patente.'''
-    for i in range(len(vehiculos_activos)):
-        if vehiculos_activos[i][0] == patente:
-            del vehiculos_activos[i]
-            return      
 
 def patente_registrada(vehiculos_activos, patente):
     '''La funcion recibe la lista de vehiculos activos y una patente, y
@@ -127,7 +102,6 @@ def filtrar_por_tipo(registros, tipo):
     resultado = list(filter(lambda vehiculo: vehiculo[1] == tipo, registros))
     return resultado
 
-    return resultado
 def tipovehiculo(tipo):
     if tipo == 1:
         return 3500
@@ -158,19 +132,13 @@ def convertirhoras(minutostotales):
     else:
         return horasenteras
 
-def calcular_importe(tipo, hora_ingreso, hora_egreso):
+def calcular_importe(tipo, horaentrada, minutosentrada, horasalida, minutossalida):
     preciohora = tipovehiculo(tipo)
     
     if preciohora == 0:
         return 0, 0
 
-    horaentrada = hora_ingreso.hour
-    minutosentrada = hora_ingreso.minute
-    horasalida = hora_egreso.hour
-    minutossalida = hora_egreso.minute
-
     minutos = calculartiempo(horaentrada, minutosentrada, horasalida, minutossalida)
-    
     horasdeestadia = convertirhoras(minutos)
 
     if horasdeestadia <= 1:

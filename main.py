@@ -14,7 +14,7 @@ def main():
     n, m = funciones.ingresotamañomatriz()
     matriz = funciones.matrizestacionamiento(n, m)
     
-    vehiculos_activos = {} 
+    vehiculos_activos = []
     
     historial_tickets = [] 
 
@@ -25,7 +25,7 @@ def main():
             if funciones.lugareslibres(matriz):
                 patente = input("Ingrese la patente en mayusculas: ")
                 if funciones.es_patente_valida(patente):
-                    if patente not in vehiculos_activos:
+                    if not funciones.patente_registrada(vehiculos_activos, patente):
                         tipo = int(input("Tipo de vehículo Auto(1), Camioneta(2) o Moto(3)): "))
                         while tipo not in (1, 2, 3):
                             print("Tipo inválido. Debe ser 1, 2 o 3.")
@@ -54,8 +54,8 @@ def main():
 
         elif opcion == '2':
             patente = input("Ingrese la patente a retirar: ").upper()
-            if patente in vehiculos_activos:
-                datos_vehiculo = vehiculos_activos[patente]
+            datos_vehiculo = funciones.buscar_vehiculo(vehiculos_activos, patente)
+            if datos_vehiculo is not None:
                 
                 h_out = int(input("Ingrese la hora de salida (0-23): "))
                 while h_out > 23 or h_out < 0:
@@ -80,7 +80,7 @@ def main():
                 
                 historial_tickets.append({"patente": patente, "importe": total, "tipo": datos_vehiculo[1]})
                 
-                del vehiculos_activos[patente]
+                funciones.eliminar_vehiculo(vehiculos_activos, patente)
                 
                 print(f"Vehículo retirado. Horas cobradas: {horas}. Total a pagar: ${total}")
             else:
@@ -92,10 +92,10 @@ def main():
                 print(fila)
 
         elif opcion == '4':
-            patente_buscar = input("Ingrese la patente a buscar: ").upper()
-            if patente_buscar in vehiculos_activos:
-                x = vehiculos_activos[patente_buscar][4]
-                y = vehiculos_activos[patente_buscar][5]
+            datos_vehiculo = funciones.buscar_vehiculo(vehiculos_activos, patente_buscar)
+            if datos_vehiculo is not None:
+                x = datos_vehiculo[4]
+                y = datos_vehiculo[5]
                 print(f"El vehículo está en la fila {x}, columna {y}")
             else:
                 print("Vehículo no encontrado.")
