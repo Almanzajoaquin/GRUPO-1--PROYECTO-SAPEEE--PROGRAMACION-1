@@ -3,9 +3,9 @@ import re
 from functools import reduce
 
 def es_patente_valida(patente): 
-    if re.fullmatch(r"[A-Z]{2}\d{3}[A-Z]{2}", patente):
+    if re.match(r"[A-Z]{2}\d{3}[A-Z]{2}$", patente):
         return True
-    elif re.fullmatch(r"[A-Z]{3}\d{3}", patente):
+    elif re.match(r"^[A-Z]{3}\d{3}$", patente):
         return True
     else:
         return False
