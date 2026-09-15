@@ -123,7 +123,7 @@ def tipovehiculo(tipo):
         return 0
 
 def calculartiempo(horaentrada, minutosentrada, horasalida, minutossalida):
-    '''La funcion recibe la hora y minutos de entrada y salida de un vehiculo
+    '''La funcion recibe hora y minutos de entrada y salida de un vehiculo
     y devuelve la diferencia en minutos entre ambos momentos. En caso de que
     la salida sea al dia siguiente ajusta el resultado sumando 1440 minutos.'''
     minutostotalentrada = (horaentrada * 60) + minutosentrada
