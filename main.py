@@ -43,13 +43,7 @@ def main():
                         x, y = funciones.buscarespaciodisponible(matriz)
                         matriz[x][y] = patente 
                         
-                        vehiculos_activos[patente] = {
-                            "tipo": tipo,
-                            "hora_ingreso": h_in,
-                            "minuto_ingreso": m_in,
-                            "fila": x,
-                            "columna": y
-                        }
+                        vehiculos_activos.append([patente, tipo, h_in, m_in, x, y])
                         print(f"Vehículo ingresado en posición [{x}][{y}]")
                     else:
                         print("El vehículo ya se encuentra en el estacionamiento.")
@@ -73,18 +67,18 @@ def main():
                     m_out = int(input("Ingrese los minutos de salida (0-59): "))
                 
                 horas, total = funciones.calcular_importe(
-                    datos_vehiculo["tipo"], 
-                    datos_vehiculo["hora_ingreso"],
-                    datos_vehiculo["minuto_ingreso"],
+                    datos_vehiculo[1],   # tipo
+                    datos_vehiculo[2],   # hora_ingreso
+                    datos_vehiculo[3],   # minuto_ingreso
                     h_out,
                     m_out
                 )
                 
-                x = datos_vehiculo["fila"]
-                y = datos_vehiculo["columna"]
+                x = datos_vehiculo[4]
+                y = datos_vehiculo[5]
                 matriz[x][y] = 'libre'
                 
-                historial_tickets.append({"patente": patente, "importe": total, "tipo": datos_vehiculo["tipo"]})
+                historial_tickets.append({"patente": patente, "importe": total, "tipo": datos_vehiculo[1]})
                 
                 del vehiculos_activos[patente]
                 
@@ -100,8 +94,8 @@ def main():
         elif opcion == '4':
             patente_buscar = input("Ingrese la patente a buscar: ").upper()
             if patente_buscar in vehiculos_activos:
-                x = vehiculos_activos[patente_buscar]["fila"]
-                y = vehiculos_activos[patente_buscar]["columna"]
+                x = vehiculos_activos[patente_buscar][4]
+                y = vehiculos_activos[patente_buscar][5]
                 print(f"El vehículo está en la fila {x}, columna {y}")
             else:
                 print("Vehículo no encontrado.")
