@@ -5,7 +5,7 @@ def es_patente_valida(patente):
     '''Se confirma si lo ingresado coincide con el patron de patente
     nueva (AB123CD) o patente antigua (ABC123) y devuelve True si coincide
     o False si no coincide.'''
-    if re.match(r"^[A-Z]{2}\d{3}[A-Z]{2}$", patente):  # ✅ ancla al inicio
+    if re.match(r"^[A-Z]{2}\d{3}[A-Z]{2}$", patente):
         return True
     elif re.match(r"^[A-Z]{3}\d{3}$", patente):
         return True
