@@ -1,6 +1,17 @@
 import re
 from functools import reduce
 
+def pedir_entero_en_rango(valor, minimo, maximo):
+    while True:
+        try:
+            valor = int(input())
+        except ValueError:
+            print("Debe ingresar un número entero.")
+        else:
+            if valor >= minimo and valor <= maximo:
+                return valor
+            print("Número fuera de rango.")
+
 def es_patente_valida(patente):
     '''Se confirma si lo ingresado coincide con el patron de patente
     nueva (AB123CD) o patente antigua (ABC123) y devuelve True si coincide
@@ -35,10 +46,12 @@ def ingresotamañomatriz():
     '''La funcion pide los parametros para la creacion de la matriz y tras
     verificar que sean positivos los devuelve.'''
     print("Ingrese el tamaño de la matriz (mxn)")
-    x = int(input("Ingrese el parametro m: "))
-    x = numeropositivo(x)
-    y = int(input("Ingrese el parametro n: "))
-    y = numeropositivo(y)
+    x = 0
+    print("Ingrese el parametro m: ")
+    x = pedir_entero_en_rango(x, 1, 1000)
+    y = 0
+    print("Ingrese el parametro n: ")
+    y = pedir_entero_en_rango(y, 1, 1000)
     return x, y
 
 def buscarespaciodisponible(matriz):
