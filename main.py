@@ -30,29 +30,20 @@ def main():
         # ── OPCION 1: Ingreso de vehiculo ──────────────────────────────
         if opcion == '1':
             if funciones.lugareslibres(matriz):
-                patente = input("Ingrese la patente en mayusculas: ")
+                patente = input("Ingrese la patente: ")
                 patente = patente.upper()
 
                 if funciones.es_patente_valida(patente):
                     if not funciones.patente_registrada(vehiculos_activos, patente):
 
                         # Validar tipo de vehiculo
-                        tipo = int(input("Tipo de vehículo Auto(1), Camioneta(2) o Moto(3): "))
-                        while tipo not in (1, 2, 3):
-                            print("Tipo inválido. Debe ser 1, 2 o 3.")
-                            tipo = int(input("Tipo de vehículo Auto(1), Camioneta(2) o Moto(3): "))
-
+                        tipo = funciones.pedir_entero_en_rango("Tipo de vehículo Auto(1), Camioneta(2) o Moto(3): ", 1, 3)
+                        
                         # Validar hora de entrada
-                        h_in = int(input("Ingrese la hora de entrada (0-23): "))
-                        while h_in > 23 or h_in < 0:
-                            print("Horario incorrecto. Ingrese un horario valido (0-23hs)")
-                            h_in = int(input("Ingrese la hora de entrada (0-23): "))
+                        h_in = funciones.pedir_entero_en_rango("Ingrese la hora de entrada (0-23): ", 0, 23)
 
                         # Validar minutos de entrada
-                        m_in = int(input("Ingrese los minutos de entrada (0-59): "))
-                        while m_in > 59 or m_in < 0:
-                            print("Minutos incorrecto. Ingrese un minuto valido (0-59)")
-                            m_in = int(input("Ingrese los minutos de entrada (0-59): "))
+                        m_in = funciones.pedir_entero_en_rango("Ingrese los minutos de entrada (0-59): ",0 ,59)
 
                         # Asignar espacio en la matriz y registrar el vehiculo
                         x, y = funciones.buscarespaciodisponible(matriz)
