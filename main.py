@@ -31,6 +31,7 @@ def main():
         if opcion == '1':
             if funciones.lugareslibres(matriz):
                 patente = input("Ingrese la patente en mayusculas: ")
+                patente = patente.upper()
 
                 if funciones.es_patente_valida(patente):
                     if not funciones.patente_registrada(vehiculos_activos, patente):
