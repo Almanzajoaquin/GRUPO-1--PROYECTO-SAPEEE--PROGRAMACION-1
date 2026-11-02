@@ -1,6 +1,12 @@
 import re
 from functools import reduce
 
+TARIFAS = {
+    1: 3500,
+    2: 4000,
+    3: 3000
+}
+
 def pedir_entero_en_rango(mensaje, minimo, maximo):
     while True:
         try:
@@ -68,38 +74,32 @@ def lugareslibres(matriz):
     return False
 
 def patente_registrada(vehiculos_activos, patente):
-    '''La funcion recibe la lista de vehiculos activos y una patente, y
-    devuelve True si la patente ya se encuentra registrada, o False en
-    caso contrario.'''
-    for vehiculo in vehiculos_activos:
-        if vehiculo[0] == patente:
-            return True
+    '''La funcion recibe el diccionario de vehiculos activos y una patente, y
+    devuelve True si la patente ya se encuentra registrada como clave, o False
+    en caso contrario.'''
+    if patente in vehiculos_activos:
+        return True
     return False
 
 def buscar_vehiculo(vehiculos_activos, patente):
-    '''La funcion recibe la lista de vehiculos activos y una patente, y
-    devuelve la lista de datos del vehiculo si lo encuentra, o None si
+    '''La funcion recibe el diccionario de vehiculos activos y una patente, y
+    devuelve el diccionario de datos del vehiculo si lo encuentra, o None si
     no esta registrado.'''
-    for vehiculo in vehiculos_activos:
-        if vehiculo[0] == patente:
-            return vehiculo
-    return None
+    return vehiculos_activos.get(patente)
 
 def eliminar_vehiculo(vehiculos_activos, patente):
-    '''La funcion recibe la lista de vehiculos activos y una patente, y
-    elimina de la lista el vehiculo que coincida con esa patente.'''
-    for i in range(len(vehiculos_activos)):
-        if vehiculos_activos[i][0] == patente:
-            del vehiculos_activos[i]
-            return
+    '''La funcion recibe el diccionario de vehiculos activos y una patente, y
+    elimina del diccionario el vehiculo que coincida con esa patente.'''
+    if patente in vehiculos_activos:
+        del vehiculos_activos[patente]
 
 def reporte_recaudacion_total(historial):
     '''La funcion recibe el historial de tickets y calcula la suma total
     de todos los importes registrados. En caso de que el historial este
-    vacio devuelve 0. Cada ticket es una lista [patente, total, tipo].'''
+    vacio devuelve 0. Cada ticket es un diccionario {"patente", "total", "tipo"}.'''
     if len(historial) == 0:
         return 0
-    total = reduce(lambda acumulador, ticket: acumulador + ticket[1], historial, 0.0)
+    total = reduce(lambda acumulador, ticket: acumulador + ticket["total"], historial, 0.0)
     return total
 
 def cantidad_vehiculos_atendidos(historial):
@@ -108,28 +108,21 @@ def cantidad_vehiculos_atendidos(historial):
     En caso de que el historial este vacio devuelve 0.'''
     if len(historial) == 0:
         return 0
-    lista_patentes = list(map(lambda ticket: ticket[0], historial))
+    lista_patentes = list(map(lambda ticket: ticket["patente"], historial))
     return len(lista_patentes)
 
 def filtrar_por_tipo(registros, tipo):
     '''La funcion recibe la lista de registros y un tipo de vehiculo
     y devuelve una lista con todos los registros que coincidan con el tipo
-    indicado. Cada registro es una lista donde el tipo se encuentra en el indice 1.'''
-    resultado = list(filter(lambda vehiculo: vehiculo[1] == tipo, registros))
+    indicado. Cada registro es un diccionario con la clave "tipo".'''
+    resultado = list(filter(lambda vehiculo: vehiculo["tipo"] == tipo, registros))
     return resultado
 
 def tipovehiculo(tipo):
     '''La funcion recibe un numero que representa el tipo de vehiculo y
-    devuelve el precio por hora correspondiente. En caso de recibir un
-    tipo invalido devuelve 0.'''
-    if tipo == 1:
-        return 3500
-    elif tipo == 2:
-        return 4000
-    elif tipo == 3:
-        return 3000
-    else:
-        return 0
+    devuelve el precio por hora correspondiente desde el diccionario TARIFAS.
+    En caso de recibir un tipo invalido devuelve 0.'''
+    return TARIFAS.get(tipo, 0)
 
 def calculartiempo(horaentrada, minutosentrada, horasalida, minutossalida):
     '''La funcion recibe hora y minutos de entrada y salida de un vehiculo

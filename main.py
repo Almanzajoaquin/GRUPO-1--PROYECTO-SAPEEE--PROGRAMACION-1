@@ -16,12 +16,12 @@ def main():
     n, m = funciones.ingresotamañomatriz()
     matriz = funciones.matrizestacionamiento(n, m)
 
-    # Lista de vehiculos actualmente en el estacionamiento
-    # Cada vehiculo es: [patente, tipo, h_entrada, m_entrada, fila, columna]
-    vehiculos_activos = []
+    # Diccionario de vehiculos actualmente en el estacionamiento
+    # Clave: patente -> Valor: {"tipo": tipo, "h_entrada": h_in, "m_entrada": m_in, "fila": x, "columna": y}
+    vehiculos_activos = {}
 
     # Historial de todos los vehiculos que egresaron
-    # Cada ticket es: [patente, total_pagado, tipo]
+    # Cada ticket es: {"patente": patente, "total": total_pagado, "tipo": tipo}
     historial_tickets = []
 
     while True:
@@ -43,12 +43,18 @@ def main():
                         h_in = funciones.pedir_entero_en_rango("Ingrese la hora de entrada (0-23): ", 0, 23)
 
                         # Validar minutos de entrada
-                        m_in = funciones.pedir_entero_en_rango("Ingrese los minutos de entrada (0-59): ",0 ,59)
+                        m_in = funciones.pedir_entero_en_rango("Ingrese los minutos de entrada (0-59): ", 0, 59)
 
-                        # Asignar espacio en la matriz y registrar el vehiculo
+                        # Asignar espacio en la matriz y registrar el vehiculo en el diccionario
                         x, y = funciones.buscarespaciodisponible(matriz)
                         matriz[x][y] = patente
-                        vehiculos_activos.append([patente, tipo, h_in, m_in, x, y])
+                        vehiculos_activos[patente] = {
+                            "tipo": tipo,
+                            "h_entrada": h_in,
+                            "m_entrada": m_in,
+                            "fila": x,
+                            "columna": y
+                        }
                         print(f"Vehículo ingresado en posición [{x}][{y}]")
                     else:
                         print("El vehículo ya se encuentra en el estacionamiento.")
@@ -78,20 +84,24 @@ def main():
 
                 # Calcular horas y total a pagar
                 horas, total = funciones.calcular_importe(
-                    datos_vehiculo[1],  # tipo
-                    datos_vehiculo[2],  # hora entrada
-                    datos_vehiculo[3],  # minutos entrada
+                    datos_vehiculo["tipo"],       # tipo
+                    datos_vehiculo["h_entrada"],  # hora entrada
+                    datos_vehiculo["m_entrada"],  # minutos entrada
                     h_out,
                     m_out
                 )
 
                 # Liberar el espacio en la matriz
-                x = datos_vehiculo[4]
-                y = datos_vehiculo[5]
+                x = datos_vehiculo["fila"]
+                y = datos_vehiculo["columna"]
                 matriz[x][y] = 'libre'
 
-                # Guardar en historial y eliminar de activos
-                historial_tickets.append([patente, total, datos_vehiculo[1]])
+                # Guardar diccionario en historial y eliminar de activos
+                historial_tickets.append({
+                    "patente": patente,
+                    "total": total,
+                    "tipo": datos_vehiculo["tipo"]
+                })
                 funciones.eliminar_vehiculo(vehiculos_activos, patente)
 
                 print(f"Vehículo retirado. Horas cobradas: {horas}. Total a pagar: ${total}")
@@ -109,8 +119,8 @@ def main():
             patente_buscar = input("Ingrese la patente a buscar: ")
             datos_vehiculo = funciones.buscar_vehiculo(vehiculos_activos, patente_buscar)
             if datos_vehiculo is not None:
-                x = datos_vehiculo[4]
-                y = datos_vehiculo[5]
+                x = datos_vehiculo["fila"]
+                y = datos_vehiculo["columna"]
                 print(f"El vehículo está en la fila {x}, columna {y}")
             else:
                 print("Vehículo no encontrado.")
