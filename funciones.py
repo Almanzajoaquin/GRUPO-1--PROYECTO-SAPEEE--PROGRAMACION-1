@@ -1,10 +1,10 @@
 import re
 from functools import reduce
 
-def pedir_entero_en_rango(valor, minimo, maximo):
+def pedir_entero_en_rango(mensaje, minimo, maximo):
     while True:
         try:
-            valor = int(input())
+            valor = int(input(mensaje + " "))
         except ValueError:
             print("Debe ingresar un número entero.")
         else:
@@ -46,12 +46,8 @@ def ingresotamañomatriz():
     '''La funcion pide los parametros para la creacion de la matriz y tras
     verificar que sean positivos los devuelve.'''
     print("Ingrese el tamaño de la matriz (mxn)")
-    x = 0
-    print("Ingrese el parametro m: ")
-    x = pedir_entero_en_rango(x, 1, 1000)
-    y = 0
-    print("Ingrese el parametro n: ")
-    y = pedir_entero_en_rango(y, 1, 1000)
+    x = pedir_entero_en_rango("Ingrese el parametro m: ", 1, 1000)
+    y = pedir_entero_en_rango("Ingrese el parametro n: ", 1, 1000)
     return x, y
 
 def buscarespaciodisponible(matriz):
