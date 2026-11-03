@@ -114,7 +114,7 @@ def main():
 
         # ── OPCION 4: Buscar vehiculo por patente ──────────────────────
         elif opcion == '4':
-            patente_buscar = input("Ingrese la patente a buscar: ")
+            patente_buscar = input("Ingrese la patente a buscar: ").upper()
             datos_vehiculo = funciones.buscar_vehiculo(vehiculos_activos, patente_buscar)
             if datos_vehiculo is not None:
                 x, y = datos_vehiculo["posicion"]  # [Matías]
