@@ -1,4 +1,5 @@
 import re
+import json
 from functools import reduce
 
 TARIFAS = {
@@ -6,6 +7,8 @@ TARIFAS = {
     2: 4000,
     3: 3000
 }
+
+ARCHIVO_ESTADO = "estacionamiento.json"
 
 def pedir_entero_en_rango(mensaje, minimo, maximo):
     while True:
@@ -162,3 +165,45 @@ def calcular_importe(tipo, horaentrada, minutosentrada, horasalida, minutossalid
         horascobradas = horasdeestadia
         totalpagar = horascobradas * preciohora
         return horascobradas, totalpagar
+
+
+# ── Persistencia en archivo JSON ───────────────────────────────────────
+
+def guardar_estado(matriz, vehiculos_activos, historial, ruta=ARCHIVO_ESTADO):
+    '''La funcion recibe la matriz, el diccionario de vehiculos activos y el
+    historial de tickets, y los guarda juntos en un archivo JSON. Devuelve
+    True si se pudo guardar o False si hubo un problema con el archivo.
+    Las tuplas de posicion se guardan como listas, porque JSON no tiene
+    un tipo tupla.'''
+    estado = {
+        "matriz": matriz,
+        "vehiculos_activos": vehiculos_activos,
+        "historial": historial
+    }
+    try:
+        with open(ruta, "w", encoding="utf-8") as archivo:
+            json.dump(estado, archivo, indent=4, ensure_ascii=False)
+        return True
+    except OSError:
+        return False
+
+def cargar_estado(ruta=ARCHIVO_ESTADO):
+    '''La funcion lee el archivo JSON y devuelve una tupla
+    (matriz, vehiculos_activos, historial). Si el archivo no existe (primera
+    ejecucion) o esta dañado, devuelve None para que el sistema empiece
+    de cero. Al recuperar, vuelve a convertir cada posicion en tupla.'''
+    try:
+        with open(ruta, "r", encoding="utf-8") as archivo:
+            estado = json.load(archivo)
+        matriz = estado["matriz"]
+        vehiculos_activos = estado["vehiculos_activos"]
+        historial = estado["historial"]
+    except FileNotFoundError:
+        return None
+    except (json.JSONDecodeError, KeyError):
+        print("El archivo de datos está dañado. Se iniciará un estacionamiento nuevo.")
+        return None
+
+    for datos in vehiculos_activos.values():
+        datos["posicion"] = tuple(datos["posicion"])
+    return matriz, vehiculos_activos, historial
