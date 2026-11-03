@@ -74,17 +74,11 @@ def main():
             if datos_vehiculo is not None:
 
                 # Validar hora de salida
-                h_out = int(input("Ingrese la hora de salida (0-23): "))
-                while h_out > 23 or h_out < 0:
-                    print("Horario incorrecto. Ingrese un horario valido (0-23hs)")
-                    h_out = int(input("Ingrese la hora de salida (0-23): "))
-
+                h_out = funciones.pedir_entero_en_rango("Ingrese la hora de salida (0-23): ",0, 23)
+                
                 # Validar minutos de salida
-                m_out = int(input("Ingrese los minutos de salida (0-59): "))
-                while m_out > 59 or m_out < 0:
-                    print("Horario incorrecto. Ingrese un horario valido (0-59)")
-                    m_out = int(input("Ingrese los minutos de salida (0-59): "))
-
+                m_out = funciones.pedir_entero_en_rango("Ingrese los minutos de salida (0-59): ", 0, 59)
+                
                 # Calcular horas y total a pagar
                 horas, total = funciones.calcular_importe(
                     datos_vehiculo["tipo"],       # tipo
