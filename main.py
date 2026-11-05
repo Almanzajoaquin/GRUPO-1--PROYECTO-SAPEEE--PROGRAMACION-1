@@ -1,5 +1,7 @@
 import funciones
 
+NOMBRES_TIPO = {1: "Auto", 2: "Camioneta", 3: "Moto"}
+
 def mostrar_menu():
     # Imprime las opciones disponibles y devuelve la seleccion del usuario
     print("\n--- SISTEMA DE GESTIÓN DE ESTACIONAMIENTO ---")
@@ -8,21 +10,22 @@ def mostrar_menu():
     print("3. Ver mapa del estacionamiento (Disponibilidad)")
     print("4. Buscar vehículo por patente")
     print("5. Reporte de recaudación")
-    print("6. Salir")
+    print("6. Vehículos estacionados por tipo")
+    print("7. Salir")
     return input("Seleccione una opción: ")
 
 def main():
-    # Pedir tamaño y crear la matriz del estacionamiento
-    n, m = funciones.ingresotamañomatriz()
-    matriz = funciones.matrizestacionamiento(n, m)
-
-    # Lista de vehiculos actualmente en el estacionamiento
-    # Cada vehiculo es: [patente, tipo, h_entrada, m_entrada, fila, columna]
-    vehiculos_activos = []
-
-    # Historial de todos los vehiculos que egresaron
-    # Cada ticket es: [patente, total_pagado, tipo]
-    historial_tickets = []
+    estado = funciones.cargar_estado()
+    if estado is None:
+        # Primera ejecucion (o archivo dañado): pedir tamaño y empezar de cero
+        m, n = funciones.ingresotamañomatriz()
+        matriz = funciones.matrizestacionamiento(m, n)
+        vehiculos_activos = {}
+        historial_tickets = []
+    else:
+        matriz, vehiculos_activos, historial_tickets = estado
+        print(f"Datos recuperados: {len(vehiculos_activos)} vehículo(s) estacionado(s) "
+              f"y {len(historial_tickets)} ticket(s) en el historial.")
 
     while True:
         opcion = mostrar_menu()
@@ -30,34 +33,34 @@ def main():
         # ── OPCION 1: Ingreso de vehiculo ──────────────────────────────
         if opcion == '1':
             if funciones.lugareslibres(matriz):
-                patente = input("Ingrese la patente en mayusculas: ")
+                patente = input("Ingrese la patente: ").strip().upper()
 
                 if funciones.es_patente_valida(patente):
                     if not funciones.patente_registrada(vehiculos_activos, patente):
 
                         # Validar tipo de vehiculo
-                        tipo = int(input("Tipo de vehículo Auto(1), Camioneta(2) o Moto(3): "))
-                        while tipo not in (1, 2, 3):
-                            print("Tipo inválido. Debe ser 1, 2 o 3.")
-                            tipo = int(input("Tipo de vehículo Auto(1), Camioneta(2) o Moto(3): "))
+                        tipo = funciones.pedir_entero_en_rango("Tipo de vehículo Auto(1), Camioneta(2) o Moto(3): ", 1, 3)
 
                         # Validar hora de entrada
-                        h_in = int(input("Ingrese la hora de entrada (0-23): "))
-                        while h_in > 23 or h_in < 0:
-                            print("Horario incorrecto. Ingrese un horario valido (0-23hs)")
-                            h_in = int(input("Ingrese la hora de entrada (0-23): "))
+                        h_in = funciones.pedir_entero_en_rango("Ingrese la hora de entrada (0-23): ", 0, 23)
 
                         # Validar minutos de entrada
-                        m_in = int(input("Ingrese los minutos de entrada (0-59): "))
-                        while m_in > 59 or m_in < 0:
-                            print("Minutos incorrecto. Ingrese un minuto valido (0-59)")
-                            m_in = int(input("Ingrese los minutos de entrada (0-59): "))
+                        m_in = funciones.pedir_entero_en_rango("Ingrese los minutos de entrada (0-59): ", 0, 59)
 
-                        # Asignar espacio en la matriz y registrar el vehiculo
-                        x, y = funciones.buscarespaciodisponible(matriz)
+                        # Asignar espacio en la matriz y registrar el vehiculo en el diccionario
+                        # La posicion se guarda como tupla (fila, columna)
+                        posicion = funciones.buscarespaciodisponible(matriz)
+                        x, y = posicion
                         matriz[x][y] = patente
-                        vehiculos_activos.append([patente, tipo, h_in, m_in, x, y])
+                        vehiculos_activos[patente] = {
+                            "tipo": tipo,
+                            "h_entrada": h_in,
+                            "m_entrada": m_in,
+                            "posicion": posicion
+                        }
                         print(f"Vehículo ingresado en posición [{x}][{y}]")
+                        if not funciones.guardar_estado(matriz, vehiculos_activos, historial_tickets):
+                            print("Atención: no se pudieron guardar los datos.")
                     else:
                         print("El vehículo ya se encuentra en el estacionamiento.")
                 else:
@@ -67,42 +70,44 @@ def main():
 
         # ── OPCION 2: Egreso de vehiculo ───────────────────────────────
         elif opcion == '2':
-            patente = input("Ingrese la patente a retirar: ").upper()
+            patente = input("Ingrese la patente a retirar: ").strip().upper()
             datos_vehiculo = funciones.buscar_vehiculo(vehiculos_activos, patente)
 
             if datos_vehiculo is not None:
 
                 # Validar hora de salida
-                h_out = int(input("Ingrese la hora de salida (0-23): "))
-                while h_out > 23 or h_out < 0:
-                    print("Horario incorrecto. Ingrese un horario valido (0-23hs)")
-                    h_out = int(input("Ingrese la hora de salida (0-23): "))
+                h_out = funciones.pedir_entero_en_rango("Ingrese la hora de salida (0-23): ", 0, 23)
 
                 # Validar minutos de salida
-                m_out = int(input("Ingrese los minutos de salida (0-59): "))
-                while m_out > 59 or m_out < 0:
-                    print("Horario incorrecto. Ingrese un horario valido (0-59)")
-                    m_out = int(input("Ingrese los minutos de salida (0-59): "))
+                m_out = funciones.pedir_entero_en_rango("Ingrese los minutos de salida (0-59): ", 0, 59)
 
                 # Calcular horas y total a pagar
                 horas, total = funciones.calcular_importe(
-                    datos_vehiculo[1],  # tipo
-                    datos_vehiculo[2],  # hora entrada
-                    datos_vehiculo[3],  # minutos entrada
+                    datos_vehiculo["tipo"],       # tipo
+                    datos_vehiculo["h_entrada"],  # hora entrada
+                    datos_vehiculo["m_entrada"],  # minutos entrada
                     h_out,
                     m_out
                 )
 
                 # Liberar el espacio en la matriz
-                x = datos_vehiculo[4]
-                y = datos_vehiculo[5]
+                x, y = datos_vehiculo["posicion"]
                 matriz[x][y] = 'libre'
 
-                # Guardar en historial y eliminar de activos
-                historial_tickets.append([patente, total, datos_vehiculo[1]])
+                # Guardar diccionario en historial y eliminar de activos
+                historial_tickets.append({
+                    "patente": patente,
+                    "total": total,
+                    "tipo": datos_vehiculo["tipo"]
+                })
                 funciones.eliminar_vehiculo(vehiculos_activos, patente)
 
-                print(f"Vehículo retirado. Horas cobradas: {horas}. Total a pagar: ${total}")
+                if total == 0:
+                    print("Vehículo retirado. Estadía de una hora o menos: sin cargo.")
+                else:
+                    print(f"Vehículo retirado. Horas cobradas: {horas}. Total a pagar: ${total}")
+                if not funciones.guardar_estado(matriz, vehiculos_activos, historial_tickets):
+                    print("Atención: no se pudieron guardar los datos.")
             else:
                 print("El vehículo no se encuentra registrado.")
 
@@ -114,12 +119,14 @@ def main():
 
         # ── OPCION 4: Buscar vehiculo por patente ──────────────────────
         elif opcion == '4':
-            patente_buscar = input("Ingrese la patente a buscar: ")
+            patente_buscar = input("Ingrese la patente a buscar: ").strip().upper()
             datos_vehiculo = funciones.buscar_vehiculo(vehiculos_activos, patente_buscar)
             if datos_vehiculo is not None:
-                x = datos_vehiculo[4]
-                y = datos_vehiculo[5]
+                x, y = datos_vehiculo["posicion"]
+                nombre_tipo = NOMBRES_TIPO[datos_vehiculo["tipo"]]
+                hora = f"{datos_vehiculo['h_entrada']:02d}:{datos_vehiculo['m_entrada']:02d}"
                 print(f"El vehículo está en la fila {x}, columna {y}")
+                print(f"Tipo: {nombre_tipo}. Hora de entrada: {hora}")
             else:
                 print("Vehículo no encontrado.")
 
@@ -127,11 +134,29 @@ def main():
         elif opcion == '5':
             total = funciones.reporte_recaudacion_total(historial_tickets)
             cantidad = funciones.cantidad_vehiculos_atendidos(historial_tickets)
-            print(f"Total recaudado históricamente: ${total}")
+            print(f"Total recaudado históricamente: ${total:.2f}")
             print(f"Cantidad total de vehículos atendidos: {cantidad}")
+            print("\nDetalle por tipo:")
+            for tipo, nombre in NOMBRES_TIPO.items():
+                tickets_tipo = funciones.filtrar_por_tipo(historial_tickets, tipo)
+                recaudado = funciones.reporte_recaudacion_total(tickets_tipo)
+                print(f"  {nombre}: {len(tickets_tipo)} atendido(s), ${recaudado:.2f}")
 
-        # ── OPCION 6: Salir ────────────────────────────────────────────
+        # ── OPCION 6: Vehiculos estacionados por tipo ──────────────────
         elif opcion == '6':
+            activos = list(vehiculos_activos.values())
+            print("\nVehículos estacionados actualmente:")
+            for tipo, nombre in NOMBRES_TIPO.items():
+                cant = len(funciones.filtrar_por_tipo(activos, tipo))
+                print(f"  {nombre}: {cant}")
+
+        # ── OPCION 7: Salir ────────────────────────────────────────────
+        elif opcion == '7':
+            # Guardar todo antes de salir
+            if funciones.guardar_estado(matriz, vehiculos_activos, historial_tickets):
+                print("Datos guardados correctamente.")
+            else:
+                print("Atención: no se pudieron guardar los datos.")
             print("Saliendo del sistema...")
             break
 
