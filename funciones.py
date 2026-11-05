@@ -1,5 +1,6 @@
 import re
 import json
+import os
 from functools import reduce
 
 TARIFAS = {
@@ -9,6 +10,8 @@ TARIFAS = {
 }
 
 ARCHIVO_ESTADO = "estacionamiento.json"
+ARCHIVO_VIP = "clientes_vip.txt"
+DESCUENTO_VIP = 0.20  # 20% de descuento para patentes adheridas al conjunto VIP
 
 def pedir_entero_en_rango(mensaje, minimo, maximo):
     while True:
@@ -32,40 +35,34 @@ def es_patente_valida(patente):
     else:
         return False
 
-def matrizestacionamiento(n, m):
-    '''La funcion recibe dos numeros en forma de parametros (n y m) para crear
-    una matriz de tamaño nxm. Se llena la matriz con casillas llamadas "libre"
-    que representan los espacios sin usar del estacionamiento.'''
+def matrizestacionamiento(m, n):
+    '''La funcion recibe dos numeros en forma de parametros (m filas y n columnas)
+    para crear una matriz de tamaño mxn. Se llena la matriz con casillas llamadas
+    "libre" que representan los espacios sin usar del estacionamiento.'''
     matriz = []
-    for i in range(n):
+    for i in range(m):
         fila_nueva = []
-        for j in range(m):
+        for j in range(n):
             fila_nueva.append('libre')
         matriz.append(fila_nueva)
     return matriz
 
-def numeropositivo(x):
-    '''La funcion recibe un numero y en caso de que sea negativo o 0 le pide
-    al usuario que ingrese un valor positivo.'''
-    while x <= 0:
-        x = int(input("Ingrese un valor positivo: "))
-    return x
-
 def ingresotamañomatriz():
     '''La funcion pide los parametros para la creacion de la matriz y tras
-    verificar que sean positivos los devuelve.'''
+    verificar que esten en rango valido los devuelve.'''
     print("Ingrese el tamaño de la matriz (mxn)")
-    x = pedir_entero_en_rango("Ingrese el parametro m: ", 1, 1000)
-    y = pedir_entero_en_rango("Ingrese el parametro n: ", 1, 1000)
-    return x, y
+    m = pedir_entero_en_rango("Ingrese la cantidad de filas (m): ", 1, 1000)
+    n = pedir_entero_en_rango("Ingrese la cantidad de columnas (n): ", 1, 1000)
+    return m, n
 
 def buscarespaciodisponible(matriz):
     '''La funcion registra la matriz desde el principio y cuando encuentra un
-    espacio "libre" devuelve su ubicacion en la matriz.'''
+    espacio "libre" devuelve su ubicacion como tupla (fila, columna).'''
     for i in range(len(matriz)):
         for j in range(len(matriz[i])):
             if matriz[i][j] == 'libre':
                 return i, j
+    return None
 
 def lugareslibres(matriz):
     '''La funcion registra la matriz hasta encontrar un espacio "libre". En caso
@@ -80,9 +77,7 @@ def patente_registrada(vehiculos_activos, patente):
     '''La funcion recibe el diccionario de vehiculos activos y una patente, y
     devuelve True si la patente ya se encuentra registrada como clave, o False
     en caso contrario.'''
-    if patente in vehiculos_activos:
-        return True
-    return False
+    return patente in vehiculos_activos
 
 def buscar_vehiculo(vehiculos_activos, patente):
     '''La funcion recibe el diccionario de vehiculos activos y una patente, y
@@ -99,9 +94,9 @@ def eliminar_vehiculo(vehiculos_activos, patente):
 def reporte_recaudacion_total(historial):
     '''La funcion recibe el historial de tickets y calcula la suma total
     de todos los importes registrados. En caso de que el historial este
-    vacio devuelve 0. Cada ticket es un diccionario {"patente", "total", "tipo"}.'''
+    vacio devuelve 0.0. Cada ticket es un diccionario {"patente", "total", "tipo"}.'''
     if len(historial) == 0:
-        return 0
+        return 0.0
     total = reduce(lambda acumulador, ticket: acumulador + ticket["total"], historial, 0.0)
     return total
 
@@ -149,11 +144,11 @@ def convertirhoras(minutostotales):
     else:
         return horasenteras
 
-def calcular_importe(tipo, horaentrada, minutosentrada, horasalida, minutossalida):
-    '''La funcion recibe el tipo de vehiculo y los datos de hora de ingreso
-    y egreso. Calcula el tiempo de estadia y devuelve las horas cobradas y el
-    total a pagar. Si la estadia es de una hora o menos no se cobra. En caso
-    de recibir un tipo invalido devuelve 0, 0.'''
+def calcular_importe(tipo, horaentrada, minutosentrada, horasalida, minutossalida, es_vip=False):
+    '''La funcion recibe el tipo de vehiculo, los datos de hora de ingreso
+    y egreso, y un booleano opcional es_vip. Calcula el tiempo de estadia y
+    devuelve las horas cobradas y el total a pagar. Si la estadia es de una
+    hora o menos no se cobra. Si es cliente VIP aplica un 20% de descuento.'''
     preciohora = tipovehiculo(tipo)
     if preciohora == 0:
         return 0, 0
@@ -164,17 +159,14 @@ def calcular_importe(tipo, horaentrada, minutosentrada, horasalida, minutossalid
     else:
         horascobradas = horasdeestadia
         totalpagar = horascobradas * preciohora
+        if es_vip:
+            totalpagar = totalpagar * (1 - DESCUENTO_VIP)
         return horascobradas, totalpagar
 
 
 # ── Persistencia en archivo JSON ───────────────────────────────────────
 
 def guardar_estado(matriz, vehiculos_activos, historial, ruta=ARCHIVO_ESTADO):
-    '''La funcion recibe la matriz, el diccionario de vehiculos activos y el
-    historial de tickets, y los guarda juntos en un archivo JSON. Devuelve
-    True si se pudo guardar o False si hubo un problema con el archivo.
-    Las tuplas de posicion se guardan como listas, porque JSON no tiene
-    un tipo tupla.'''
     estado = {
         "matriz": matriz,
         "vehiculos_activos": vehiculos_activos,
@@ -188,10 +180,6 @@ def guardar_estado(matriz, vehiculos_activos, historial, ruta=ARCHIVO_ESTADO):
         return False
 
 def cargar_estado(ruta=ARCHIVO_ESTADO):
-    '''La funcion lee el archivo JSON y devuelve una tupla
-    (matriz, vehiculos_activos, historial). Si el archivo no existe (primera
-    ejecucion) o esta dañado, devuelve None para que el sistema empiece
-    de cero. Al recuperar, vuelve a convertir cada posicion en tupla.'''
     try:
         with open(ruta, "r", encoding="utf-8") as archivo:
             estado = json.load(archivo)
@@ -200,10 +188,82 @@ def cargar_estado(ruta=ARCHIVO_ESTADO):
         historial = estado["historial"]
     except FileNotFoundError:
         return None
-    except (json.JSONDecodeError, KeyError):
+    except (json.JSONDecodeError, KeyError, OSError):
         print("El archivo de datos está dañado. Se iniciará un estacionamiento nuevo.")
         return None
 
     for datos in vehiculos_activos.values():
         datos["posicion"] = tuple(datos["posicion"])
     return matriz, vehiculos_activos, historial
+
+
+# ── Conjuntos (set) y Persistencia en Archivo de Texto (.txt) ──────────
+
+def cargar_clientes_vip(ruta=ARCHIVO_VIP):
+    clientes_vip = set()
+    try:
+        with open(ruta, "r", encoding="utf-8") as archivo:
+            for linea in archivo:
+                patente = linea.strip().upper()
+                if patente != "" and es_patente_valida(patente):
+                    clientes_vip.add(patente)
+    except FileNotFoundError:
+        return set()
+    except OSError:
+        print("Error al leer el archivo de clientes VIP.")
+        return set()
+    return clientes_vip
+
+def guardar_clientes_vip(clientes_vip, ruta=ARCHIVO_VIP):
+    try:
+        with open(ruta, "w", encoding="utf-8") as archivo:
+            for patente in sorted(clientes_vip):
+                archivo.write(patente + "\n")
+        return True
+    except OSError:
+        return False
+
+def agregar_cliente_vip(clientes_vip, patente):
+    if patente in clientes_vip:
+        return False
+    clientes_vip.add(patente)
+    return True
+
+def eliminar_cliente_vip(clientes_vip, patente):
+    if patente in clientes_vip:
+        clientes_vip.remove(patente)
+        return True
+    return False
+
+def obtener_patentes_unicas(historial):
+    return set(map(lambda ticket: ticket["patente"], historial))
+
+def comparar_activos_con_vip(vehiculos_activos, clientes_vip):
+    patentes_activas = set(vehiculos_activos.keys())
+    activos_vip = patentes_activas & clientes_vip
+    activos_regulares = patentes_activas - clientes_vip
+    return activos_vip, activos_regulares
+
+def limpiar_matriz(matriz):
+    for i in range(len(matriz)):
+        for j in range(len(matriz[i])):
+            matriz[i][j] = 'libre'
+    return matriz
+
+def borrar_archivos_sistema(ruta_json=ARCHIVO_ESTADO, ruta_vip=ARCHIVO_VIP):
+    '''Elimina por completo los archivos físicos del disco (JSON y TXT) para
+    reiniciar el sistema desde cero en la próxima ejecución.'''
+    exito = True
+    try:
+        if os.path.exists(ruta_json):
+            os.remove(ruta_json)
+    except OSError:
+        exito = False
+        
+    try:
+        if os.path.exists(ruta_vip):
+            os.remove(ruta_vip)
+    except OSError:
+        exito = False
+        
+    return exito
