@@ -1,5 +1,5 @@
 import funciones
-
+#Diccionario
 NOMBRES_TIPO = {1: "Auto", 2: "Camioneta", 3: "Moto"}
 
 def mostrar_menu():
