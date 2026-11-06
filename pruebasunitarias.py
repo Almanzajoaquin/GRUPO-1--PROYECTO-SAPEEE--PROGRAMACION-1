@@ -57,7 +57,7 @@ def prueba_buscar_1():
 def prueba_buscar_2():
     vehiculos = {"AA111BB": {"tipo": 2, "h_entrada": 10}}
     pat = "XX999YY"
-    esperado = None  # Corregido: .get() devuelve None si no existe
+    esperado = None  # .get() devuelve None si la patente no existe
     obtenido = funciones.buscar_vehiculo(vehiculos, pat)
     imprimir_resultado("buscar_vehiculo", f"Diccionario y patente '{pat}'", esperado, obtenido)
 
@@ -96,6 +96,27 @@ def prueba_recaudacion_total():
     obtenido = funciones.reporte_recaudacion_total(historial)
     imprimir_resultado("reporte_recaudacion_total", "Historial con $3500 y $4000", esperado, obtenido)
 
+# ── PARTE 7: Cálculo del importe ───────────────────────────────
+def prueba_importe_vip():
+    # 10:00 a 12:30 = 150 minutos -> 3 horas x $3500 = $10500, con 20% VIP = $8400
+    esperado = (3, 8400.0)
+    obtenido = funciones.calcular_importe(1, 10, 0, 12, 30, True)
+    imprimir_resultado("calcular_importe", "Auto VIP de 10:00 a 12:30", esperado, obtenido)
+
+def prueba_importe_una_hora():
+    # Caso límite: una hora exacta no se cobra
+    esperado = (0, 0)
+    obtenido = funciones.calcular_importe(1, 10, 0, 11, 0)
+    imprimir_resultado("calcular_importe", "Auto de 10:00 a 11:00 (una hora exacta)", esperado, obtenido)
+
+# ── PARTE 8: Recuperación desde el archivo JSON ────────────────
+def prueba_cargar_estado_inexistente():
+    # Si el archivo no existe se captura FileNotFoundError y se devuelve None
+    ruta = "archivo_que_no_existe.json"
+    esperado = None
+    obtenido = funciones.cargar_estado(ruta)
+    imprimir_resultado("cargar_estado", f"Ruta inexistente '{ruta}'", esperado, obtenido)
+
 
 def ejecutar_todas_las_pruebas():
     print("\n========== INICIO DE PRUEBAS UNITARIAS ==========")
@@ -111,6 +132,9 @@ def ejecutar_todas_las_pruebas():
     prueba_filtrar_1()
     prueba_filtrar_2()
     prueba_recaudacion_total()
+    prueba_importe_vip()
+    prueba_importe_una_hora()
+    prueba_cargar_estado_inexistente()
     print("==================================================\n")
 
 
